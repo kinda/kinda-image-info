@@ -10,21 +10,26 @@ let KindaImageInfo = KindaObject.extend('KindaObject', function() {
   };
 
   this.get = async function() {
-    let exifData = await new Promise(function(resolve, reject) {
+    let dimensions = await new Promise((resolve, reject) => {
+      sizeOf(this.path, function(err, res) {
+        if (err) reject(err); else resolve(res);
+      });
+    });
+    let exifData = await new Promise((resolve, reject) => {
       new ExifImage({ image: this.path }, function(err, res) { // eslint-disable-line no-new
         if (err) reject(err); else resolve(res);
       });
-    }.bind(this));
-    return this._get(exifData);
+    });
+    return this._get(dimensions, exifData);
   };
 
   this.getSync = function() {
+    let dimensions = sizeOf(this.path);
     let image = new ExifImage({ image: this.path });
-    return this._get(image.exifData);
+    return this._get(dimensions, image.exifData);
   };
 
-  this._get = function(exifData) {
-    let dimensions = sizeOf(this.path);
+  this._get = function(dimensions, exifData) {
     let width = dimensions.width;
     let height = dimensions.height;
     let resolution;
