@@ -5,18 +5,23 @@ let ExifImage = require('exif').ExifImage;
 let KindaObject = require('kinda-object');
 
 let KindaImageInfo = KindaObject.extend('KindaObject', function() {
-  this.creator = function(path) {
-    this.path = path;
+  this.creator = function(pathOrBuffer) {
+    this.pathOrBuffer = pathOrBuffer;
   };
 
   this.get = async function() {
-    let dimensions = await new Promise((resolve, reject) => {
-      sizeOf(this.path, function(err, res) {
-        if (err) reject(err); else resolve(res);
+    let dimensions;
+    if (typeof this.pathOrBuffer === 'string') {
+      dimensions = await new Promise((resolve, reject) => {
+        sizeOf(this.pathOrBuffer, function(err, res) {
+          if (err) reject(err); else resolve(res);
+        });
       });
-    });
+    } else {
+      dimensions = sizeOf(this.pathOrBuffer);
+    }
     let exifData = await new Promise((resolve, reject) => {
-      new ExifImage({ image: this.path }, function(err, res) { // eslint-disable-line no-new
+      new ExifImage({ image: this.pathOrBuffer }, function(err, res) { // eslint-disable-line no-new
         if (err) reject(err); else resolve(res);
       });
     });
@@ -24,8 +29,8 @@ let KindaImageInfo = KindaObject.extend('KindaObject', function() {
   };
 
   this.getSync = function() {
-    let dimensions = sizeOf(this.path);
-    let image = new ExifImage({ image: this.path });
+    let dimensions = sizeOf(this.pathOrBuffer);
+    let image = new ExifImage({ image: this.pathOrBuffer });
     return this._get(dimensions, image.exifData);
   };
 
