@@ -1,6 +1,6 @@
 'use strict';
 
-let sizeOf = require('image-size');
+let sizeOf = require('kinda-image-size');
 let ExifImage = require('kinda-exif').ExifImage;
 let KindaObject = require('kinda-object');
 
